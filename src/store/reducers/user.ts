@@ -22,14 +22,12 @@ export type UserAction =
 export const userReducer = (state = initialUserState, action: UserAction): UserState => {
   switch (action.type) {
     case checkAuthAction.fulfilled.type:
-    case loginAction.fulfilled.type: {
-      const typedAction = action as ReturnType<typeof loginAction.fulfilled>;
+    case loginAction.fulfilled.type:
       return {
         ...state,
         authorizationStatus: AuthorizationStatus.Auth,
-        userEmail: typedAction.payload.email,
+        userEmail: (action.payload as { email: string }).email,
       };
-    }
     case checkAuthAction.rejected.type:
     case loginAction.rejected.type:
     case logoutAction.fulfilled.type:

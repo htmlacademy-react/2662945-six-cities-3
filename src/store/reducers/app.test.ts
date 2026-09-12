@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { appReducer, initialAppState, AppAction } from './app';
 import { fetchOffersAction, ActionCreator, toggleFavoriteAction } from '../action';
 import { Offer } from '../../types';
+import '@testing-library/jest-dom';
 
 const mockOffer: Offer = {
   id: '1',

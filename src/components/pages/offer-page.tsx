@@ -12,7 +12,8 @@ import {
   fetchOfferAction,
   fetchNearbyOffersAction,
   fetchCommentsAction,
-  toggleFavoriteAction
+  toggleFavoriteAction,
+  fetchFavoriteOffersAction
 } from '../../store/action';
 import { Spinner } from '../spinner';
 import { capitalize, getBedroomsText, getAdultsText } from '../../utils';
@@ -29,6 +30,12 @@ export function OfferPage() {
   const isOfferDataLoading = useSelector((state: RootState) => state.offer.isOfferDataLoading);
   const authorizationStatus = useSelector((state: RootState) => state.user.authorizationStatus);
   const favoriteOffers = useSelector(getFavoriteOffers);
+
+  useEffect(() => {
+    if (authorizationStatus === AuthorizationStatus.Auth) {
+      dispatch(fetchFavoriteOffersAction());
+    }
+  }, [dispatch, authorizationStatus]);
 
   const handleFavoriteClick = useCallback(
     (offerId: string, isFavorite: boolean) => {
@@ -66,6 +73,7 @@ export function OfferPage() {
   const sortedAndLimitedReviews = [...comments]
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
     .slice(0, 10);
+
   return (
     <div className="page">
       <Header isAuthorized={isAuthorized} favoritesCount={favoriteOffers.length} />
@@ -97,14 +105,18 @@ export function OfferPage() {
               <div className="offer__name-wrapper">
                 <h1 className="offer__name">{currentOffer.title}</h1>
                 <button
-                  className="offer__bookmark-button button"
+                  className={`offer__bookmark-button button ${
+                    currentOffer.isFavorite ? 'offer__bookmark-button--active' : ''
+                  }`}
                   type="button"
                   onClick={() => handleFavoriteClick(currentOffer.id, currentOffer.isFavorite)}
                 >
                   <svg className="offer__bookmark-icon" width={31} height={33}>
                     <use href="#icon-bookmark" />
                   </svg>
-                  <span className="visually-hidden">To bookmarks</span>
+                  <span className="visually-hidden">
+                    {currentOffer.isFavorite ? 'In bookmarks' : 'To bookmarks'}
+                  </span>
                 </button>
               </div>
 

@@ -1,26 +1,31 @@
-import { describe, it, expect } from 'vitest';
 import { userReducer, initialUserState } from './user';
-import { loginAction, logoutAction } from '../action';
 import { AuthorizationStatus } from '../../const';
+import { loginAction, logoutAction } from '../action';
 
 describe('UserReducer', () => {
-  it('должен установить Auth и email при loginAction.fulfilled', () => {
+  it('должен установить Auth при loginAction.fulfilled', () => {
     const action = loginAction.fulfilled(
-      { name: 'Test', avatarUrl: '', isPro: false, email: 'test@test.com', token: '123' },
-      '',
-      { email: 'test@test.com', password: '123' }
+      {
+        token: 'secret',
+        email: 'test@test.com',
+        name: 'Test User',
+        avatarUrl: 'http://test.com/avatar.jpg',
+        isPro: false,
+      },
+      'requestId',
+      { email: 'test@test.com', password: '123456' }
     );
     const result = userReducer(initialUserState, action);
     expect(result.authorizationStatus).toBe(AuthorizationStatus.Auth);
     expect(result.userEmail).toBe('test@test.com');
   });
-  it('должен установить NoAuth и очистить email при logoutAction.fulfilled', () => {
+
+  it('должен установить NoAuth при logoutAction.fulfilled', () => {
     const stateWithAuth = {
-      ...initialUserState,
       authorizationStatus: AuthorizationStatus.Auth,
-      userEmail: 'test@test.com'
+      userEmail: 'test@test.com',
     };
-    const action = logoutAction.fulfilled(undefined, '', undefined);
+    const action = logoutAction.fulfilled(undefined, 'requestId', undefined);
     const result = userReducer(stateWithAuth, action);
     expect(result.authorizationStatus).toBe(AuthorizationStatus.NoAuth);
     expect(result.userEmail).toBeNull();

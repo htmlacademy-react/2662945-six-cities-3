@@ -4,7 +4,8 @@ import {
   fetchNearbyOffersAction,
   fetchCommentsAction,
   postCommentAction,
-  toggleFavoriteAction
+  toggleFavoriteAction,
+  fetchFavoriteOffersAction
 } from '../action';
 
 export type OfferState = {
@@ -28,7 +29,8 @@ export type OfferAction =
   | ReturnType<typeof fetchNearbyOffersAction.fulfilled>
   | ReturnType<typeof fetchCommentsAction.fulfilled>
   | ReturnType<typeof postCommentAction.fulfilled>
-  | ReturnType<typeof toggleFavoriteAction.fulfilled>;
+  | ReturnType<typeof toggleFavoriteAction.fulfilled>
+  | ReturnType<typeof fetchFavoriteOffersAction.fulfilled>;
 
 export const offerReducer = (state = initialOfferState, action: OfferAction): OfferState => {
   switch (action.type) {
@@ -62,6 +64,24 @@ export const offerReducer = (state = initialOfferState, action: OfferAction): Of
         nearbyOffers: state.nearbyOffers.map((offer) =>
           offer.id === updatedOffer.id ? updatedOffer : offer
         ),
+      };
+    }
+
+    case fetchFavoriteOffersAction.fulfilled.type: {
+      const typedAction = action as ReturnType<typeof fetchFavoriteOffersAction.fulfilled>;
+      const favoriteIds = typedAction.payload.map((offer) => offer.id);
+      return {
+        ...state,
+        currentOffer: state.currentOffer
+          ? {
+            ...state.currentOffer,
+            isFavorite: favoriteIds.includes(state.currentOffer.id),
+          }
+          : null,
+        nearbyOffers: state.nearbyOffers.map((offer) => ({
+          ...offer,
+          isFavorite: favoriteIds.includes(offer.id),
+        })),
       };
     }
 

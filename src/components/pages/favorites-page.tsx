@@ -1,27 +1,24 @@
-import { useSelector, useDispatch } from 'react-redux';
-import { useEffect } from 'react';
+import { useSelector } from 'react-redux';
 import { Header } from '../header';
 import { Footer } from '../footer';
 import { OfferCard } from '../offer-card';
 import { getFavoriteOffers, getGroupedFavoriteOffers } from '../../store/selectors';
 import { Offer } from '../../types';
-import { fetchFavoriteOffersAction } from '../../store/action';
-import { AppDispatch } from '../../store';
+import { RootState } from '../../store';
 import { Link } from 'react-router-dom';
+import { AuthorizationStatus } from '../../const';
 
 export function FavoritesPage() {
-  const dispatch = useDispatch<AppDispatch>();
   const favoriteOffers = useSelector(getFavoriteOffers);
   const groupedFavorites = useSelector(getGroupedFavoriteOffers);
-  const hasFavorites = favoriteOffers.length > 0;
+  const authorizationStatus = useSelector((state: RootState) => state.user.authorizationStatus);
 
-  useEffect(() => {
-    dispatch(fetchFavoriteOffersAction());
-  }, [dispatch]);
+  const hasFavorites = favoriteOffers.length > 0;
+  const isAuthorized = authorizationStatus === AuthorizationStatus.Auth;
 
   return (
     <div className="page">
-      <Header isAuthorized favoritesCount={favoriteOffers.length} />
+      <Header isAuthorized={isAuthorized} favoritesCount={favoriteOffers.length} />
 
       <main
         className={

@@ -44,7 +44,7 @@ export function Header({ isAuthorized, favoritesCount = 0 }: HeaderProps) {
                   <li className="header__nav-item user">
                     <Link
                       className="header__nav-link header__nav-link--profile"
-                      to="/favorites"
+                      to={AppRoute.Favorites}
                     >
                       <div className="header__avatar-wrapper user__avatar-wrapper" />
                       <span className="header__user-name user__name">{userEmail || 'User'}</span>
@@ -65,7 +65,7 @@ export function Header({ isAuthorized, favoritesCount = 0 }: HeaderProps) {
                 <li className="header__nav-item user">
                   <Link
                     className="header__nav-link header__nav-link--profile"
-                    to="/login"
+                    to={AppRoute.Login}
                   >
                     <div className="header__avatar-wrapper user__avatar-wrapper" />
                     <span className="header__login">Sign in</span>
