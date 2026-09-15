@@ -1,4 +1,11 @@
-import { Fragment, useState, FormEvent, ChangeEvent } from 'react';
+import {
+  Fragment,
+  useState,
+  FormEvent,
+  ChangeEvent,
+  useRef,
+  useEffect,
+} from 'react';
 import { useDispatch } from 'react-redux';
 import { ratingTitles } from '../const';
 import { postCommentAction } from '../store/action';
@@ -14,7 +21,17 @@ export function ReviewForm({ offerId }: ReviewFormProps) {
   const [rating, setRating] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const isFormValid = rating !== '' && review.length >= 50 && review.length <= 300;
+  const isMounted = useRef(true);
+
+  useEffect(
+    () => () => {
+      isMounted.current = false;
+    },
+    [],
+  );
+
+  const isFormValid =
+    rating !== '' && review.length >= 50 && review.length <= 300;
 
   const handleRatingChange = (evt: ChangeEvent<HTMLInputElement>) => {
     setRating(evt.target.value);
@@ -38,50 +55,60 @@ export function ReviewForm({ offerId }: ReviewFormProps) {
         offerId,
         comment: review,
         rating: Number(rating),
-      })
+      }),
     )
       .unwrap()
       .then(() => {
-        setReview('');
-        setRating('');
+        if (isMounted.current) {
+          setReview('');
+          setRating('');
+        }
       })
-      .catch(() => {
-      })
+      .catch(() => {})
       .finally(() => {
-        setIsSubmitting(false);
+        if (isMounted.current) {
+          setIsSubmitting(false);
+        }
       });
   };
 
   return (
-    <form className="reviews__form form" action="#" method="post" onSubmit={handleSubmit}>
+    <form
+      className="reviews__form form"
+      action="#"
+      method="post"
+      onSubmit={handleSubmit}
+    >
       <label className="reviews__label form__label" htmlFor="review">
         Your review
       </label>
 
       <div className="reviews__rating-form form__rating">
-        {Object.entries(ratingTitles).reverse().map(([value, title]) => (
-          <Fragment key={value}>
-            <input
-              className="form__rating-input visually-hidden"
-              name="rating"
-              value={value}
-              id={`${value}-stars`}
-              type="radio"
-              checked={rating === value}
-              onChange={handleRatingChange}
-              disabled={isSubmitting}
-            />
-            <label
-              htmlFor={`${value}-stars`}
-              className="reviews__rating-label form__rating-label"
-              title={title}
-            >
-              <svg className="form__star-image" width={37} height={33}>
-                <use href="#icon-star" />
-              </svg>
-            </label>
-          </Fragment>
-        ))}
+        {Object.entries(ratingTitles)
+          .reverse()
+          .map(([value, title]) => (
+            <Fragment key={value}>
+              <input
+                className="form__rating-input visually-hidden"
+                name="rating"
+                value={value}
+                id={`${value}-stars`}
+                type="radio"
+                checked={rating === value}
+                onChange={handleRatingChange}
+                disabled={isSubmitting}
+              />
+              <label
+                htmlFor={`${value}-stars`}
+                className="reviews__rating-label form__rating-label"
+                title={title}
+              >
+                <svg className="form__star-image" width={37} height={33}>
+                  <use href="#icon-star" />
+                </svg>
+              </label>
+            </Fragment>
+          ))}
       </div>
 
       <textarea
@@ -97,8 +124,8 @@ export function ReviewForm({ offerId }: ReviewFormProps) {
       <div className="reviews__button-wrapper">
         <p className="reviews__help">
           To submit review please make sure to set{' '}
-          <span className="reviews__star">rating</span> and describe your stay with at
-          least <b className="reviews__text-amount">50 characters</b>.
+          <span className="reviews__star">rating</span> and describe your stay
+          with at least <b className="reviews__text-amount">50 characters</b>.
         </p>
         <button
           className="reviews__submit form__submit button"
@@ -111,4 +138,3 @@ export function ReviewForm({ offerId }: ReviewFormProps) {
     </form>
   );
 }
-

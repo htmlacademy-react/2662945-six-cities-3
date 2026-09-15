@@ -5,18 +5,25 @@ import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 import { AppRoute, AuthorizationStatus } from './const';
 import { reducer } from './store/reducer';
-import App from './App';
+import App from './app';
 
 const renderWithProviders = (initialRoute: string, isAuth: boolean = false) => {
   const store = configureStore({
     reducer,
     preloadedState: {
       user: {
-        authorizationStatus: isAuth ? AuthorizationStatus.Auth : AuthorizationStatus.NoAuth,
+        authorizationStatus: isAuth
+          ? AuthorizationStatus.Auth
+          : AuthorizationStatus.NoAuth,
         userEmail: isAuth ? 'test@test.com' : null,
       },
       app: { city: 'Paris', isLoading: false, offers: [], favoriteOffers: [] },
-      offer: { currentOffer: null, nearbyOffers: [], comments: [], isOfferDataLoading: false },
+      offer: {
+        currentOffer: null,
+        nearbyOffers: [],
+        comments: [],
+        isOfferDataLoading: false,
+      },
     },
   });
 
@@ -25,7 +32,7 @@ const renderWithProviders = (initialRoute: string, isAuth: boolean = false) => {
       <MemoryRouter initialEntries={[initialRoute]}>
         <App />
       </MemoryRouter>
-    </Provider>
+    </Provider>,
   );
 };
 
@@ -39,7 +46,9 @@ describe('Application Routing', () => {
 
   it('должен отрисовать LoginPage при маршруте "/login"', () => {
     renderWithProviders(AppRoute.Login);
-    expect(screen.getByRole('heading', { name: /sign in/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: /sign in/i }),
+    ).toBeInTheDocument();
   });
 
   it('должен отрисовать NotFoundPage при неизвестном маршруте', () => {
@@ -49,7 +58,8 @@ describe('Application Routing', () => {
 
   it('должен перенаправить неавторизованного пользователя с /favorites на /login', () => {
     renderWithProviders(AppRoute.Favorites, false);
-    expect(screen.getByRole('heading', { name: /sign in/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: /sign in/i }),
+    ).toBeInTheDocument();
   });
 });
-

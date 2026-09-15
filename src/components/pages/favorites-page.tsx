@@ -1,24 +1,48 @@
-import { useSelector } from 'react-redux';
+import { useCallback } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { Header } from '../header';
 import { Footer } from '../footer';
 import { OfferCard } from '../offer-card';
-import { getFavoriteOffers, getGroupedFavoriteOffers } from '../../store/selectors';
+import {
+  getFavoriteOffers,
+  getGroupedFavoriteOffers,
+} from '../../store/selectors';
 import { Offer } from '../../types';
-import { RootState } from '../../store';
+import { RootState, AppDispatch } from '../../store';
 import { Link } from 'react-router-dom';
-import { AuthorizationStatus } from '../../const';
+import { AuthorizationStatus, AppRoute } from '../../const';
+import { toggleFavoriteAction } from '../../store/action';
 
 export function FavoritesPage() {
+  const dispatch = useDispatch<AppDispatch>();
+  const navigate = useNavigate();
   const favoriteOffers = useSelector(getFavoriteOffers);
   const groupedFavorites = useSelector(getGroupedFavoriteOffers);
-  const authorizationStatus = useSelector((state: RootState) => state.user.authorizationStatus);
+  const authorizationStatus = useSelector(
+    (state: RootState) => state.user.authorizationStatus,
+  );
 
   const hasFavorites = favoriteOffers.length > 0;
   const isAuthorized = authorizationStatus === AuthorizationStatus.Auth;
 
+  const handleFavoriteClick = useCallback(
+    (offerId: string, isFavorite: boolean) => {
+      if (authorizationStatus !== AuthorizationStatus.Auth) {
+        navigate(AppRoute.Login);
+        return;
+      }
+      dispatch(toggleFavoriteAction({ offerId, status: isFavorite ? 0 : 1 }));
+    },
+    [authorizationStatus, dispatch, navigate],
+  );
+
   return (
     <div className="page">
-      <Header isAuthorized={isAuthorized} favoritesCount={favoriteOffers.length} />
+      <Header
+        isAuthorized={isAuthorized}
+        favoritesCount={favoriteOffers.length}
+      />
 
       <main
         className={
@@ -28,34 +52,42 @@ export function FavoritesPage() {
         }
       >
         <div className="page__favorites-container container">
-          <section className={hasFavorites ? 'favorites' : 'favorites favorites--empty'}>
+          <section
+            className={
+              hasFavorites ? 'favorites' : 'favorites favorites--empty'
+            }
+          >
             {hasFavorites ? (
               <>
                 <h1 className="favorites__title">Saved listing</h1>
 
                 <ul className="favorites__list">
-                  {Object.entries(groupedFavorites).map(([city, cityOffers]) => (
-                    <li key={city} className="favorites__locations-items">
-                      <div className="favorites__locations locations locations--current">
-                        <div className="locations__item">
-                          <Link className="locations__item-link" to="/">
-                            <span>{city}</span>
-                          </Link>
+                  {Object.entries(groupedFavorites).map(
+                    ([city, cityOffers]) => (
+                      <li key={city} className="favorites__locations-items">
+                        <div className="favorites__locations locations locations--current">
+                          <div className="locations__item">
+                            <Link className="locations__item-link" to="/">
+                              <span>{city}</span>
+                            </Link>
+                          </div>
                         </div>
-                      </div>
 
-                      <div className="favorites__places">
-                        {cityOffers.map((offer: Offer) => (
-                          <OfferCard
-                            key={offer.id}
-                            offer={offer}
-                            cardClassName="favorites__card place-card"
-                            imageWrapperClassName="favorites__image-wrapper place-card__image-wrapper"
-                          />
-                        ))}
-                      </div>
-                    </li>
-                  ))}
+                        <div className="favorites__places">
+                          {cityOffers.map((offer: Offer) => (
+                            <OfferCard
+                              key={offer.id}
+                              offer={offer}
+                              cardClassName="favorites__card place-card"
+                              imageWrapperClassName="favorites__image-wrapper place-card__image-wrapper"
+                              onFavoriteClick={() =>
+                                handleFavoriteClick(offer.id, offer.isFavorite)}
+                            />
+                          ))}
+                        </div>
+                      </li>
+                    ),
+                  )}
                 </ul>
               </>
             ) : (
@@ -64,7 +96,8 @@ export function FavoritesPage() {
                 <div className="favorites__status-wrapper">
                   <b className="favorites__status">Nothing yet saved.</b>
                   <p className="favorites__status-description">
-                    Save properties to narrow down search or plan your future trips.
+                    Save properties to narrow down search or plan your future
+                    trips.
                   </p>
                 </div>
               </>
